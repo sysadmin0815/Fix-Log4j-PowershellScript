@@ -1,5 +1,7 @@
 # Fix-Log4j-PowershellScript
-search and remove JNDI class from *log4j*.jar files on the system with Powershell (Windows) - defaults to C:\
+search and remove JNDI class from *log4j*.jar files on the system with Powershell (Windows) - defaults to C:\ <br>
+
+<b>by default the script creates a backup</b> of the file(s) in the same folder were the jar files was found, before removing the class (can be disabled with $enableBackup in the script)
 
 7-Zip is used to delete the class in the jar file.
 source: https://www.7-zip.org/
