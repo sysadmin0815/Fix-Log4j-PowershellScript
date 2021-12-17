@@ -7,8 +7,9 @@ search and remove JNDI class from *log4j*.jar files on the system with Powershel
 
 <b>by default the script creates a backup</b> of the file(s) in the same folder were the jar files was found, before removing the class (can be disabled with $enableBackup in the script)
 
-7-Zip is used to delete the class in the jar file.
-source: https://www.7-zip.org/
+7-Zip is used to delete the class in the jar file.<br>
+>  Source: https://www.7-zip.org/ <br>
+>  7-Zip Copyright (C) 1999-2021 Igor Pavlov.
 
 <b> Please read the script and modify it if needed before you execute it!</b>
 
