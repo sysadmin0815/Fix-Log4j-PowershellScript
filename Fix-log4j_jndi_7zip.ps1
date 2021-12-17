@@ -24,9 +24,9 @@
 
 
 # 7Zip
-#For manual deployment/execution us this below
-#$7zipPath = "C:\ProgramData\custom\log4jcleanup\7-Zip\7z.exe"
-#For SCCM deployment use this below
+#For executing with already installed 7zip or for testing purpose us this below
+#$7zipPath = "C:\ProgramFiles\7-Zip\7z.exe"
+#For default execution or SCCM deployment use this below. Requires the 7-Zip folder in directory of the script.
 $7zipPath = $PSScriptRoot+"\7-Zip\7za.exe"
 
 #define pattern and search base
