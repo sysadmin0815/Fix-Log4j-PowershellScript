@@ -5,11 +5,12 @@
 # Date: 16.12.2021
 #############################
 # Mod. Date: 17.12.2021
-# Version 1.3
+# Version 1.4
 #Change Log:
-#       added additional if check to stop the process of bk file not found.
-#		added PSScriptRoot for 7zip by default
-#		added $enableBackup
+#   added additional if check to stop the process of bk file not found.
+#   added PSScriptRoot for 7zip by default
+#   added $enableBackup
+#   added $searchAllDrives
 #############################
 #THE SCRIPT IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND.
 #7zip is used to remove the jndi class Source: https://www.7-zip.org/
@@ -29,8 +30,12 @@
 #For default execution or SCCM deployment use this below. Requires the 7-Zip folder in directory of the script.
 $7zipPath = $PSScriptRoot+"\7-Zip\7za.exe"
 
-#define pattern and search base
-$searchPath = "C:\"
+#set to $true to search all drives on the system for pattern; $searchpath will be ignored.
+#if set to $false the script will search in $searchpath only for pattern
+$searchAllDrives = $false
+
+#define pattern and search path; default $searchPath = "C:\" 
+$searchPath = "C:\"                     # will be ignored if $searchAllDrives is $true
 $filePattern = "*log4j*.jar"
 
 #Enable jar file backup in the same directory before removing class?
@@ -43,10 +48,10 @@ $enableBackup =  $true
 
 
 #Test for Admin permissons, if not admin exit script.
-if (! ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
-    Write-Warning "Please run this script with Admin permissions!"
-    exit 1
-}
+#if (! ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
+#    Write-Warning "Please run this script with Admin permissions!"
+#    exit 1
+#}
 
 #Get date and time for log
 $date = (Get-Date -Format "ddMMyyyy_HHmm")
@@ -86,9 +91,16 @@ if ( ! (Test-Path -Path $7zipPath) ) {
     exit 1
 }
 
-$log4jFiles = get-childitem -Path $searchPath -include $filePattern -File -Force -Recurse -ErrorAction SilentlyContinue | Where-Object {($_.PSIsContainer -eq $false)} 
-#uncomment the line below and comment the line above to check all drives for log4j jar file; $searchPath will be ignored!!
-#$log4jFiles = Get-PSDrive -PSProvider FileSystem | ForEach-Object {(Get-ChildItem ($_.Root) -Recurse -Force -Include $filepattern -ErrorAction SilentlyContinue)} |  Where-Object {($_.PSIsContainer -eq $false)} 
+if ($searchAllDrives) {
+    Write-Host "Searching on all drives. This can take a while..." -ForegroundColor Yellow
+    Add-Content -Path $PathToLogFile -Value "$datelog   -- Start search on all drives"
+    $log4jFiles = Get-PSDrive -PSProvider FileSystem | ForEach-Object {(Get-ChildItem ($_.Root) -Recurse -Force -Include $filepattern -ErrorAction SilentlyContinue)} |  Where-Object {($_.PSIsContainer -eq $false)} 
+}
+else {
+    Write-Host "Searching in $searchPath . This can take a while..." -ForegroundColor Yellow
+    Add-Content -Path $PathToLogFile -Value "$datelog   -- Start search in $searchPath"
+    $log4jFiles = get-childitem -Path $searchPath -include $filePattern -File -Force -Recurse -ErrorAction SilentlyContinue | Where-Object {($_.PSIsContainer -eq $false)} 
+}
 
 if  (! $log4jFiles -or $log4jFiles.Length -eq 0){
     Write-Host "No files found matching pattern $filepattern in Path $searchPath" -BackgroundColor Green
