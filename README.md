@@ -7,7 +7,7 @@ make sure you use the latest script release! <br>
 
 <b>the script can be deployed manually, with GPO or deployment tools like SCCM.</b><br>
 <br>
-<h3> Feaures and Info:</h3>
+<h3> Features and Info:</h3>
 <b> by default the script searches on C:\ </b> if not changed<br>
  -can be changed to search on all local drives with $searchAllDrives = $true in the script<br>
  -can be changed to search a specific path with $searchPath = "C:\your\folder\to\search\ <br><br>
