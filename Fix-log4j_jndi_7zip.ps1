@@ -38,7 +38,7 @@ $7zipPath = $PSScriptRoot+"\7-Zip\7za.exe"
 $searchAllDrives = $false
 
 #define pattern and search path; default $searchPath = "C:\" ; Always use \ at the end of the path!!
-$searchPath = "C:\log4\"                     # will be ignored if $searchAllDrives is $true
+$searchPath = "C:\"                     # will be ignored if $searchAllDrives is $true
 $filePattern = "*log4j*.jar"
 
 #Enable jar file backup in the same directory before removing class?
