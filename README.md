@@ -32,7 +32,7 @@ Tested on Windows 10, Server 2012R2, 2016 and 2019.<br>
 
 <h3>Credits:</h3>
 
-7-Zip is used to delete the class in the jar file.
+7-Zip is used to delete the class in the jar file and verify the removal.
 >  Source: https://www.7-zip.org/ <br>
 >  7-Zip Copyright (C) 1999-2021 Igor Pavlov.
 
