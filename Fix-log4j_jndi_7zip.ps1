@@ -62,11 +62,11 @@ $removeBkOnFailure = $true          #set to $false if you are not sure
 # -------------- SCRIPT START ---------------
 
 
-#Test for Admin permissons, if not admin exit script.
-#if (! ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
-#    Write-Warning "Please run this script with Admin permissions!"
-#    exit 1
-#}
+Test for Admin permissons, if not admin exit script.
+if (! ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
+    Write-Warning "Please run this script with Admin permissions!"
+    exit 1
+}
 
 #Get date and time for log
 $date = (Get-Date -Format "ddMMyyyy_HHmm")
