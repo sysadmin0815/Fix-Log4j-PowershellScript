@@ -5,14 +5,15 @@
 # Author: sysadmin0815
 # Date: 16.12.2021
 #############################
-# Mod. Date: 22.12.2021
-$scriptVersion = "1.5"
+# Mod. Date: 23.12.2021
+$scriptVersion = "1.6"
 #Change Log:
 #   added additional if check to stop the process of bk file not found.
 #   added PSScriptRoot for 7zip by default
 #   added $enableBackup
 #   added $searchAllDrives
 #   added verifying process if jndilookup class was removed from jar file
+#   bugfix and code cleanup
 #
 #############################
 #THE SCRIPT IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND.
@@ -56,7 +57,8 @@ $enableBackup =  $true
 #if the class was NOT removed successfully, the jar file was NOT modified. So keeping the bk file is optional.
 #--- set to $true to delete bk files if the class is still detected in the jar file (default)
 #--- set to $false to keep bk files if the class is still detected in the jar file.
-$removeBkOnFailure = $true          #set to $false if you are not sure
+#will be ignored if $enableBackup is set to $false
+$removeBkOnFailure = $true                  #set to $false if you are not sure
 
 
 # -------------- SCRIPT START ---------------
@@ -74,6 +76,7 @@ $datelog = (Get-Date -Format "dd.MM.yyyy HH:mm:ss")
 
 #Buid LogFolder and LogFile
 $rootFolder = $PSScriptRoot+"\"
+#$rootFolder = "C:\Windows\Logs\Custom\"            #if you want the logs stored in a different folder, modify this line and comment the above one.
 $logFileName="Log4JCleanup.log"
 $folderName = "Log"
 $PathLogs= $rootFolder
@@ -147,10 +150,13 @@ else {
     Add-Content -Path $PathToLogFile -Value "$datelog   -- Files found matching pattern $filepattern "
     $log4jFiles.FullName | Add-Content $PathToLogFile
 
+    #define temp file path for validating if jndilookup class was removed (will be deleted automatically)
     $tmpFile = "$PSScriptRoot\log4jcleanupTmp.log"
 
+    #process files found matching pattern
     foreach ($file in $log4jFiles) {
         try{ 
+            #if enableBackup is set to $true process this part
             if ($enableBackup) {
                 if (Test-Path -Path $tmpFile) {
                     Remove-Item -Path $tmpFile -Force
@@ -170,6 +176,7 @@ else {
                     Write-Host "   -- Checking if JNDILookup Class has been removed"
                     Start-Process -FilePath "$7zipPath" -ArgumentList "l `"$($file.FullName)`" org/apache/logging/log4j/core/lookup/JndiLookup.class" -NoNewWindow -Wait -RedirectStandardOutput "$tmpFile"
                     Add-Content -Path $PathToLogFile -Value "$datelog   --- Checking if JNDILookup Class has been removed"
+                    #check if jndilookup class was removed
                     $validate = Select-String -Path "$tmpOutFile" -Pattern "JndiLookup.class" -CaseSensitive -Quiet -SimpleMatch
                     if (! $validate) {
                         Write-Host "   -- Verified: File successully cleaned up." -ForegroundColor Green
@@ -191,6 +198,7 @@ else {
                         Remove-Item -Path $tmpFile -Force
                     }
                 }
+                #Error handling if backup file could not be ceated
                 else{
                     Write-Host "Error creating backup for file $file" -BackgroundColor Red -ForegroundColor Yellow
                     Write-Host "   -- No changes perfmormed" -BackgroundColor Red -ForegroundColor Yellow
@@ -201,10 +209,33 @@ else {
                 }
             }
 
-            else{   
-                Add-Content -Path $PathToLogFile -Value "$datelog   -- Backup disabled for file $file"
-                Add-Content -Path $PathToLogFile -Value "$datelog   --- Processing file $file"
-                & $7zipPath d $file.fullname org/apache/logging/log4j/core/lookup/JndiLookup.class
+            #if enableBackup is set to $false, process this part
+            else{
+                if (Test-Path -Path $tmpFile) {
+                    Remove-Item -Path $tmpFile -Force
+                }
+                Write-Host "Processing file $file"
+                Write-Host "   -- Backup DISABLED" -ForegroundColor Yellow
+                Add-Content -Path $PathToLogFile -Value "$datelog   Backup disabled for file $file"
+                Add-Content -Path $PathToLogFile -Value "$datelog   Processing file $file"
+                & $7zipPath d $file.fullname org/apache/logging/log4j/core/lookup/JndiLookup.class | Out-Null
+                Write-Host "   -- Checking if JNDILookup Class has been removed"
+                Start-Process -FilePath "$7zipPath" -ArgumentList "l `"$($file.FullName)`" org/apache/logging/log4j/core/lookup/JndiLookup.class" -NoNewWindow -Wait -RedirectStandardOutput "$tmpFile"
+                Add-Content -Path $PathToLogFile -Value "$datelog   --- Checking if JNDILookup Class has been removed"
+                $validate = Select-String -Path "$tmpOutFile" -Pattern "JndiLookup.class" -CaseSensitive -Quiet -SimpleMatch
+                #check if jndilookup class was removed
+                if (! $validate) {
+                    Write-Host "   -- Verified: File successully cleaned up." -ForegroundColor Green
+                    Add-Content -Path $PathToLogFile -Value "$datelog   --- Verified: File successully cleaned up."
+                } 
+                else {
+                    Write-Host "   -- Failure: Check whether you have write permissions or another process is currently using the file." -BackgroundColor Red -ForegroundColor Yellow
+                    Add-Content -Path $PathToLogFile -Value "$datelog   --- Failure: Check whether you have write permissions or another process is currently using the file."
+                    $returnCode = 1
+                }
+                if (Test-Path -Path $tmpFile) {
+                    Remove-Item -Path $tmpFile -Force
+                }
             }
 
         }
