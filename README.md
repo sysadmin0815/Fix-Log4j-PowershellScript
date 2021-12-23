@@ -5,7 +5,11 @@
 <b>search and remove JNDI Lookup Class from *log4j*.jar files on the system with Powershell (Windows) </b> <br>
 make sure you use the latest script release! <br>
 
-<b>the script can be deployed manually, with GPO or deployment tools like SCCM.</b><br>
+## Release version 1.6.2 and above
+Killmode for Java processes implemented. ($killMode)<br>
+<b>defaults to $false</b> if not changed manually! Be careful using this feature!<br>
+<br>
+<h3>the script can be deployed manually, with GPO or deployment tools like SCCM.</h3>
 <br>
 <h3> Features and Info:</h3>
 <b> by default the script searches on C:\ </b> if not changed<br>
@@ -18,6 +22,9 @@ make sure you use the latest script release! <br>
 <b>by default the script validates if the jndilookup.class has been removed</b> from the jar file <br> <br>
 <b> by default if the class is still detected</b> and the jar file was not modified, the backup file will be cleaned up.<br>
  -can be disabled with $removeBkOnFailure set to $false<br>
+ 
+<b> by default the script searches for running java processes</b> and write a warning in the log and console.<br>
+ -KillMode for java prcesses can be enabled by $killMode set to $true - be careful with that!<br>
 
 <b>Generate a log file</b> in the scripts root directory <br><br>
 <b>Generate readable console output</b> <br> <br> 
