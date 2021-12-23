@@ -6,7 +6,7 @@
 # Date: 16.12.2021
 #############################
 # Mod. Date: 23.12.2021
-$scriptVersion = "1.6.1"
+$scriptVersion = "1.6.2"
 #Change Log:
 #   added additional if check to stop the process of bk file not found.
 #   added PSScriptRoot for 7zip by default
@@ -14,6 +14,7 @@ $scriptVersion = "1.6.1"
 #   added $searchAllDrives
 #   added verifying process if jndilookup class was removed from jar file
 #   bugfix and code cleanup
+#   added killMode for java processes
 #
 #############################
 #THE SCRIPT IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND.
@@ -60,6 +61,14 @@ $enableBackup =  $true
 #will be ignored if $enableBackup is set to $false
 $removeBkOnFailure = $true                  #set to $false if you are not sure
 
+#Enable KillMode
+# ATTENTION!
+#if killmode is set to $true the scrip will terminate all processes matching the pattern $processName
+#the process(es) wont be started automatically again!
+#be careful using this option!
+#set to $true to enable killmode
+$killMode = $false                         #default value set to $false
+$processName = 'java'
 
 # -------------- SCRIPT START ---------------
 
@@ -146,9 +155,35 @@ else {
     Write-Host "The following files where found:" -ForegroundColor Yellow
     Write-Output  $log4jFiles.FullName
     Write-Host ""
-    Write-Host "Start removal of JNDI Lookup Class" -ForegroundColor Yellow
     Add-Content -Path $PathToLogFile -Value "$datelog   -- Files found matching pattern $filepattern "
     $log4jFiles.FullName | Add-Content $PathToLogFile
+
+        #search for java processes
+        Write-Host "Searching for running process(es) matching $processName ..." -ForegroundColor Yellow
+        $process = Get-Process -Name $processName -ErrorAction SilentlyContinue
+        if ($process) {
+            Write-Host "Running process(es) matching $processName found!" -ForegroundColor Red
+            Add-Content -Path $PathToLogFile -Value "$datelog   -- Running process(es) matching $processName found! "
+            
+            #killmode if enabled
+            if ($killMode) {
+                Write-Host "[!!] KillMode enabled! The stopped process(es) will not start automatically!" -ForegroundColor Red
+                Add-Content -Path $PathToLogFile -Value "$datelog   -- KillMode enabled! "
+                foreach ($proc in $process) {
+                    Stop-Process $proc -Force -ErrorAction SilentlyContinue
+                }
+                Write-Host "   -- Process(es) stopped." -ForegroundColor Green
+                Add-Content -Path $PathToLogFile -Value "$datelog   -- Process(es) stopped! "
+    
+            } 
+        }
+        else {
+            Write-Host "No running process(es) matching $processName found!" -ForegroundColor Green
+            Add-Content -Path $PathToLogFile -Value "$datelog   -- No process(es) matching $processName found. "
+        }
+
+    Write-Host ""
+    Write-Host "Start removal of JNDI Lookup Class" -ForegroundColor Yellow
 
     #define temp file path for validating if jndilookup class was removed (will be deleted automatically)
     $tmpFile = "$PSScriptRoot\log4jcleanupTmp.log"
