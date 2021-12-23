@@ -6,7 +6,7 @@
 # Date: 16.12.2021
 #############################
 # Mod. Date: 23.12.2021
-$scriptVersion = "1.6"
+$scriptVersion = "1.6.1"
 #Change Log:
 #   added additional if check to stop the process of bk file not found.
 #   added PSScriptRoot for 7zip by default
@@ -174,10 +174,10 @@ else {
                     Add-Content -Path $PathToLogFile -Value "$datelog   Processing file $file"
                     & $7zipPath d $file.fullname org/apache/logging/log4j/core/lookup/JndiLookup.class | Out-Null
                     Write-Host "   -- Checking if JNDILookup Class has been removed"
-                    Start-Process -FilePath "$7zipPath" -ArgumentList "l `"$($file.FullName)`" org/apache/logging/log4j/core/lookup/JndiLookup.class" -NoNewWindow -Wait -RedirectStandardOutput "$tmpFile"
+                    Start-Process -FilePath $7zipPath -ArgumentList "l `"$($file.FullName)`" org/apache/logging/log4j/core/lookup/JndiLookup.class" -NoNewWindow -Wait -RedirectStandardOutput "$tmpFile"
                     Add-Content -Path $PathToLogFile -Value "$datelog   --- Checking if JNDILookup Class has been removed"
                     #check if jndilookup class was removed
-                    $validate = Select-String -Path "$tmpOutFile" -Pattern "JndiLookup.class" -CaseSensitive -Quiet -SimpleMatch
+                    $validate = Select-String -Path "$tmpFile" -Pattern "JndiLookup.class" -CaseSensitive -Quiet -SimpleMatch
                     if (! $validate) {
                         Write-Host "   -- Verified: File successully cleaned up." -ForegroundColor Green
                         Add-Content -Path $PathToLogFile -Value "$datelog   --- Verified: File successully cleaned up."
@@ -222,7 +222,7 @@ else {
                 Write-Host "   -- Checking if JNDILookup Class has been removed"
                 Start-Process -FilePath "$7zipPath" -ArgumentList "l `"$($file.FullName)`" org/apache/logging/log4j/core/lookup/JndiLookup.class" -NoNewWindow -Wait -RedirectStandardOutput "$tmpFile"
                 Add-Content -Path $PathToLogFile -Value "$datelog   --- Checking if JNDILookup Class has been removed"
-                $validate = Select-String -Path "$tmpOutFile" -Pattern "JndiLookup.class" -CaseSensitive -Quiet -SimpleMatch
+                $validate = Select-String -Path "$tmpFile" -Pattern "JndiLookup.class" -CaseSensitive -Quiet -SimpleMatch
                 #check if jndilookup class was removed
                 if (! $validate) {
                     Write-Host "   -- Verified: File successully cleaned up." -ForegroundColor Green
